@@ -5,6 +5,7 @@ import { ScrollView, View } from 'react-native';
 import { ActionMenu, type ActionMenuItem } from '@/components/admin/ActionMenu';
 import { RenameBranchSheet } from '@/components/admin/RenameBranchSheet';
 import { ManualPaymentSheet } from '@/components/admin/ManualPaymentSheet';
+import { OpeningBalanceSheet } from '@/components/admin/OpeningBalanceSheet';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { ErrorState } from '@/components/ui/error-state';
@@ -12,6 +13,7 @@ import { HStack } from '@/components/ui/hstack';
 import { BanknoteIcon, Icon, MoreVerticalIcon, TruckIcon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 import { ReportFilterConfig } from '@/components/reports/ReportFilterConfig';
 import { ExportSheet } from '@/components/reports/ExportSheet';
 import { ExportTriggerButton } from '@/components/reports/ExportTriggerButton';
@@ -47,6 +49,7 @@ export function BranchHubScreen() {
   const [activeTab, setActiveTab] = useState<TabKey>('products');
   const [renameOpen, setRenameOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [openingBalanceOpen, setOpeningBalanceOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{ top: number; height: number } | null>(null);
   const menuRef = useRef<View>(null);
 
@@ -79,6 +82,10 @@ export function BranchHubScreen() {
           onPress: () => setRenameOpen(true),
         },
         {
+          label: 'Açılış Bakiyesini Düzenle',
+          onPress: () => setOpeningBalanceOpen(true),
+        },
+        {
           label: data.isActive ? 'Pasife Al' : 'Aktifleştir',
           onPress: () =>
             setBranchActive.mutate({
@@ -89,17 +96,8 @@ export function BranchHubScreen() {
       ]
     : [];
 
-  return (
-    <Box style={{ flex: 1 }} className="bg-background">
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: 24,
-          paddingBottom: 96,
-          gap: 16,
-        }}
-      >
+  const header = (
+    <VStack space="lg">
         <HStack space="md" className="items-center">
           <Text size="2xl" bold className="text-foreground">
             {data?.name ?? '…'}
@@ -207,10 +205,18 @@ export function BranchHubScreen() {
           })}
         </Box>
 
-        {activeTab === 'products' ? <ProductsTab branchId={branchId} /> : null}
-        {activeTab === 'movements' ? <MovementsTab branchId={branchId} /> : null}
-        {activeTab === 'details' ? <DetailsTab branchId={branchId} /> : null}
-      </ScrollView>
+    </VStack>
+  );
+
+  return (
+    <Box style={{ flex: 1 }} className="bg-background">
+      {activeTab === 'movements' ? <MovementsTab branchId={branchId} header={header} /> : (
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 96, gap: 16 }}>
+          {header}
+          {activeTab === 'products' ? <ProductsTab branchId={branchId} /> : null}
+          {activeTab === 'details' ? <DetailsTab branchId={branchId} /> : null}
+        </ScrollView>
+      )}
 
       <ExportSheet
         reportType="branch-detail"
@@ -254,6 +260,14 @@ export function BranchHubScreen() {
           key={branchId}
           branchId={branchId}
           onClose={() => setPaymentOpen(false)}
+        />
+      ) : null}
+      {openingBalanceOpen && data ? (
+        <OpeningBalanceSheet
+          key={branchId}
+          branchId={branchId}
+          openingBalance={data.openingBalance}
+          onClose={() => setOpeningBalanceOpen(false)}
         />
       ) : null}
     </Box>

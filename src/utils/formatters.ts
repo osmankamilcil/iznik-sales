@@ -4,21 +4,31 @@ const currencyFormatter = new Intl.NumberFormat('tr-TR', {
   style: 'currency',
   currency: 'TRY',
 });
+let dateFormatter: Intl.DateTimeFormat | undefined;
 
 export function formatCurrency(value: number): string {
   return currencyFormatter.format(value);
 }
 
 export function formatDate(value: Date | string): string {
-  return new Intl.DateTimeFormat('tr-TR', { timeZone: ISTANBUL_TIME_ZONE }).format(parseDisplayDate(value));
+  dateFormatter ??= new Intl.DateTimeFormat('tr-TR', { timeZone: ISTANBUL_TIME_ZONE });
+  return dateFormatter.format(parseDisplayDate(value));
 }
 
 // Bakiye gösterimi için mutlak tutar. Bakiye tek bir değer olarak sunulur;
 // yön bilgisi etiketten (Alacak/Borç) ve renkten gelir, "+/-" işareti
 // göstermeyiz.
-export function formatBalanceAmount(value: number): string {
+export function formatBalanceAmount(value: number, fractionDigits: 0 | 2 = 2): string {
+  if (fractionDigits === 0) return wholeCurrencyFormatter.format(Math.abs(value));
   return currencyFormatter.format(Math.abs(value));
 }
+
+const wholeCurrencyFormatter = new Intl.NumberFormat('tr-TR', {
+  style: 'currency',
+  currency: 'TRY',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
 
 // Bakiye yön etiketi (fırın perspektifinden):
 //   value > 0  → "Alacak"  (şube bize borçlu, tahsil edeceğiz)

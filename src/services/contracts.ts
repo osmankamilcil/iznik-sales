@@ -38,6 +38,7 @@ import type {
   SendReportEmailInput,
   SendReportEmailResult,
   UpdateDeliveryInput,
+  UpdateOpeningBalanceInput,
   User,
 } from '@/types';
 import type { SummaryPdfSnapshot } from './supabase/summaryPdfSchema';
@@ -93,13 +94,14 @@ export interface DeliveryRepository {
   createDelivery(
     input: CreateDeliveryInput,
     idempotencyKey: string,
+    actorId: string,
   ): Promise<ReceiptSummary>;
-  updateDelivery(input: UpdateDeliveryInput): Promise<ReceiptSummary>;
+  updateDelivery(input: UpdateDeliveryInput, idempotencyKey: string, actorId: string): Promise<ReceiptSummary>;
   softDeleteDelivery(id: string, reason: string): Promise<void>;
 }
 
 export interface PaymentRepository {
-  recordManualPayment(input: ManualPaymentInput, idempotencyKey?: string): Promise<Payment>;
+  recordManualPayment(input: ManualPaymentInput, idempotencyKey: string, actorId: string): Promise<Payment>;
   closeReceivables(input: CloseReceivablesInput, idempotencyKey: string): Promise<BulkPaymentResult>;
 }
 
@@ -118,6 +120,7 @@ export interface AdminLocationRepository {
   setDistrictActive(id: string, isActive: boolean): Promise<void>;
   setBranchActive(id: string, isActive: boolean): Promise<void>;
   renameBranch(id: string, name: string): Promise<void>;
+  updateOpeningBalance(input: UpdateOpeningBalanceInput): Promise<void>;
   setOpeningBalancesLocked(locked: boolean): Promise<void>;
   getOpeningBalancesLocked(): Promise<boolean>;
   getBranchHubDetails(branchId: string): Promise<BranchHubDetails>;
